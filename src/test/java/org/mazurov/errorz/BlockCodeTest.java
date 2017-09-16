@@ -108,4 +108,13 @@ public class BlockCodeTest {
         Assert.assertEquals(0, decoded);
     }
 
+    @Test
+    public void testMazurov2D() {
+        BlockCode code = new BlockCode2D(256, 250, 256, 250, new Mazurov());
+        int nRuns = 1;
+
+        // Positive only
+        int decoded = code.testErrors(nRuns, 2100);
+        Assert.assertEquals(nRuns, decoded);
+    }
 }

@@ -16,6 +16,13 @@
 
 package org.mazurov.errorz;
 
+/**
+ * Project ErrorZ
+ *
+ * https://github.com/OlegMazurov/ErrorZ
+ *
+ */
+
 public class Main {
 
     public static void main(String[] args) {
@@ -59,6 +66,12 @@ public class Main {
         System.out.println("Test result: " + (decoded == nRuns ? "PASS" : "FAIL"));
         decoded = code.testErrors(nRuns, 22);
         System.out.println("Test result: " + (decoded == 0 ? "PASS" : "FAIL"));
+
+        code = new BlockCode2D(256, 224, 256, 224, new ReedSolomon());
+        code.testErrors(25);
+
+        code = new BlockCode2D(256, 224, 256, 224, new Mazurov());
+        code.testErrors(25);
     }
 
 }

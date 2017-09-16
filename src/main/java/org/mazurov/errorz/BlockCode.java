@@ -104,6 +104,47 @@ public abstract class BlockCode {
         return decoded;
     }
 
+    /**
+     * Iteratively finds what number of errors has recovery probability .5
+     * @param nRuns maximum number of iterations
+     */
+    public void testErrors(int nRuns) {
+        System.out.println(this);
+        int maxDecoded = 0;
+        int minFailed = Integer.MAX_VALUE;
+        int hi = N - K;
+        int lo = 0;
+        for (int t = 0; t < nRuns; ++t) {
+            BlockCode testCode = this.clone();
+            int errors = (lo + hi)/2;
+            testCode.addErrors(errors);
+            boolean decoded = false;
+            if (testCode.fixErrors()) {
+                decoded = true;
+                long[] testX = testCode.getX();
+                for (int i = 0; i < X.length; ++i) {
+                    if (testX[i] != X[i]) {
+                        decoded = false;
+                        break;
+                    }
+                }
+            }
+            System.out.println("    errors: " + errors + (decoded ? "  OK" : "  FAIL"));
+            if (decoded) {
+                maxDecoded = Math.max(maxDecoded, errors);
+                lo = errors + 1;
+                if (lo > hi) hi = lo;
+            }
+            else {
+                minFailed = Math.min(minFailed, errors);
+                hi = errors - 1;
+                if (lo > hi) lo = hi;
+            }
+        }
+        System.out.println("    [min failed, max decoded]: [" + minFailed +", " + maxDecoded + "]");
+    }
+
+
     public abstract BlockCode newInstance(int n, int k, long[] x, int offset, int step, boolean fix);
     public abstract BlockCode clone();
     public abstract void fixErasures(int[] idx);
