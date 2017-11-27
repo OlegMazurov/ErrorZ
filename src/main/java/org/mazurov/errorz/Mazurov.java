@@ -252,29 +252,6 @@ public class Mazurov extends BlockCode {
     }
 
     /**
-     * Finds all distinct roots of a polynomial
-     * @param P - polynomial
-     * @return array of found distinct roots
-     */
-    private static int[] findRoots(long[] P) {
-        ArrayList<Integer> idx = new ArrayList<>();
-        for (int i = 0; i < Z.length; ++i) {
-            long v = 0;
-            for (int j = P.length - 1; j >= 0; --j) {
-                v = GFadd(GFmul(v, Z[i]), P[j]);
-            }
-            if (v == 0) {
-                idx.add(i);
-            }
-        }
-        int[] res = new int[idx.size()];
-        for (int i=0; i<res.length; ++i) {
-            res[i] = idx.get(i);
-        }
-        return res;
-    }
-
-    /**
      * fixErrors
      * @return true if successful
      */
@@ -297,9 +274,25 @@ public class Mazurov extends BlockCode {
         long[] P = doGauss(A);
         if (P == null) return false;
 
-        int[] idx = findRoots(P);
-        if (idx.length != P.length - 1) return false;
-        fixErasures(idx);
+        // Find roots and decode errors in one scan
+        long[] P0 = new long[P.length - 1];
+        for (int i = 0; i < N; ++i) {
+            long z = Z[i];
+            long r = P[P.length - 1]; // UNIT
+            for (int j = P0.length - 1; j >= 0; --j) {
+                P0[j] = r;
+                r = GFadd(GFmul(r, z), P[j]);
+            }
+            if (r != ZERO) continue;
+
+            long p = ZERO;
+            long q = ZERO;
+            for (int j = P0.length - 1; j >= 0; --j ) {
+                p = GFadd(p, GFmul(P0[j], S[j]));
+                q = GFadd(GFmul(q, z), P0[j]);
+            }
+            X[IDX(i)] = GFadd(X[IDX(i)], GFdiv(p, q));
+        }
 
         return true;
     }
