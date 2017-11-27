@@ -12,7 +12,7 @@ to 4 for the analogous Reed-Solomon code. The probability of rejected or wrong d
 which along with the simplicity of the decoding procedure makes the code interesting from a practical perspective.
 
 Performance improvements that would compromise the simplicity of the implementation have not been attempted.
-I hope to write up a document providing a gentle introduction to Reed-Solomon codes, my algorithm, and some extensions.
+I hope to write up a document [(current version)](docs/ECCfromScratch.pdf) providing a gentle introduction to Reed-Solomon codes, my algorithm, and some extensions.
 
 ## How to build, test, and run
 
