@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,17 @@ public class GF64 {
 
     private static final long ROOT = 27l;
     private static final long MSBIT = 0x8000000000000000l;
-    private static final long REVD = -2l;
 
     public static final long ZERO = 0;
     public static final long UNIT = 1;
     public static final long ALPHA = 2;
 
+    /**
+     * Galois field multiplication
+     * @param a field element
+     * @param b field element
+     * @return {@code a * b}
+     */
     public static long GFmul(long a, long b) {
         long res = 0;
         while (b != 0) {
@@ -50,12 +55,18 @@ public class GF64 {
         return res;
     }
 
-    public static long GFpow(long a, long b) {
-        long bit = Long.highestOneBit(b);
+    /**
+     * Galois field power function
+     * @param a field element
+     * @param exp exponent to which {@code a} is to be raised
+     * @return {@code a ^ exp}
+     */
+    public static long GFpow(long a, long exp) {
+        long bit = Long.highestOneBit(exp);
         long res = 1;
         while (bit != 0) {
             res = GFmul(res, res);
-            if ((b & bit) != 0) {
+            if ((exp & bit) != 0) {
                 res = GFmul(res, a);
             }
             bit = bit >>> 1;
@@ -63,19 +74,77 @@ public class GF64 {
         return res;
     }
 
-    public static long GFrev(long a) {
-        if (a == 0) throw new IllegalArgumentException("division by zero");
-        return GFpow(a, REVD);
-    }
-
+    /**
+     * Galois field division
+     * Using the extended Euclid algorithm simultaneously multiplying by {@code a}
+     * @param a
+     * @param b
+     * @return {@code a / b}
+     */
     public static long GFdiv(long a, long b) {
-        return GFmul(a, GFrev(b));
+        if (b == 0) throw new IllegalArgumentException("division by zero");
+        long m = MSBIT;
+        long p = b;
+        long vp = a;
+        long q = p;
+        long vq = vp;
+        boolean done = false;
+        while (!done) {
+            done = (q & m) != 0;
+            q <<= 1;
+            if ((vq & MSBIT) != 0) vq = vq << 1 ^ ROOT;
+            else vq <<= 1;
+        }
+        q ^= ROOT;
+
+        while (p != 1) {
+            for (;;) {
+                if ((p & m) != 0) break;
+                else if ((q & m) != 0) {
+                    long t = p; p = q; q = t;
+                    t = vp; vp = vq; vq = t;
+                    break;
+                }
+                m >>>= 1;
+            }
+            long r = q;
+            long vr = vq;
+            while ((r & m) == 0) {
+                r <<= 1;
+                if ((vr & MSBIT) != 0) vr = vr << 1 ^ ROOT;
+                else vr <<= 1;
+            }
+            p ^= r;
+            vp ^= vr;
+        }
+        return vp;
     }
 
+    /**
+     * Galois field reciprocal
+     * @param a field element
+     * @return {@code 1 / a}
+     */
+    public static long GFrev(long a) {
+        return GFdiv(UNIT, a);
+    }
+
+    /**
+     * Galois field addition
+     * @param a field element
+     * @param b field element
+     * @return {@code a + b}
+     */
     public static long GFadd(long a, long b) {
         return a ^ b;
     }
 
+    /**
+     * Galois field subtraction
+     * @param a field element
+     * @param b field element
+     * @return {@code a - b}
+     */
     public static long GFsub(long a, long b) {
         return a ^ b;
     }

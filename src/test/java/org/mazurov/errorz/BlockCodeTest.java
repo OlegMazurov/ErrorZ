@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package org.mazurov.errorz;
 
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Project ErrorZ
@@ -26,10 +28,11 @@ import org.junit.Test;
  *
  */
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BlockCodeTest {
 
     @Test
-    public void testRS() {
+    public void testA_RS() {
         BlockCode code = new ReedSolomon(256, 248);
         int nRuns = 100;
 
@@ -43,7 +46,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testRS2() {
+    public void testA_RS2() {
         BlockCode code = new ReedSolomon(256, 240);
         int nRuns = 100;
 
@@ -57,7 +60,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testRS3() {
+    public void testA_RS3() {
         BlockCode code = new ReedSolomon(256, 232);
         int nRuns = 100;
 
@@ -71,7 +74,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testMazurov() {
+    public void testB_Mazurov() {
         BlockCode code = new Mazurov(256, 248);
         int nRuns = 100;
 
@@ -81,7 +84,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testMazurov2() {
+    public void testB_Mazurov2() {
         BlockCode code = new Mazurov(256, 240);
         int nRuns = 100;
 
@@ -95,7 +98,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testMazurov3() {
+    public void testB_Mazurov3() {
         BlockCode code = new Mazurov(256, 232);
         int nRuns = 100;
 
@@ -109,7 +112,7 @@ public class BlockCodeTest {
     }
 
     @Test
-    public void testMazurov2D() {
+    public void testB_Mazurov4() {
         BlockCode code = new BlockCode2D(256, 250, 256, 250, new Mazurov());
         int nRuns = 1;
 

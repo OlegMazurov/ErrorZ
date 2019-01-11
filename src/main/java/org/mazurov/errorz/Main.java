@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,16 @@ public class Main {
 
     public static void main(String[] args) {
 
-        BlockCode code = new ReedSolomon(256, 248);
-        int nRuns = 1000;
-        int decoded = code.testErrors(nRuns, 4);
+        long seed = System.currentTimeMillis();
+        Random.reset(seed);
+        System.out.println("seed: " + seed);
+
+        BlockCode code;
+        int nRuns, decoded;
+
+        code = new ReedSolomon(256, 248);
+        nRuns = 1000;
+        decoded = code.testErrors(nRuns, 4);
         System.out.println("Test result: " + (decoded == nRuns ? "PASS" : "FAIL"));
         decoded = code.testErrors(nRuns, 5);
         System.out.println("Test result: " + (decoded == 0 ? "PASS" : "FAIL"));

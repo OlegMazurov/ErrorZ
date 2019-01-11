@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ public abstract class BlockCode {
         int decoded = nRuns - rejected - failed;
         StringBuilder sb = new StringBuilder();
         sb.append(this);
+        sb.append(", redundancy: ").append(N - K);
         sb.append(", errors: ").append(errors);
         sb.append(", runs: ").append(nRuns);
         sb.append(", decoded: " + decoded);

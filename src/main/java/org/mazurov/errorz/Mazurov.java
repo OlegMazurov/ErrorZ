@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 
 package org.mazurov.errorz;
-
-import java.util.ArrayList;
 
 import static org.mazurov.errorz.GF64.*;
 
@@ -276,6 +274,9 @@ public class Mazurov extends BlockCode {
 
         // Find roots and decode errors in one scan
         long[] P0 = new long[P.length - 1];
+        int[] idx = new int[m];
+        long[] val = new long[m];
+        int ii = 0;
         for (int i = 0; i < N; ++i) {
             long z = Z[i];
             long r = P[P.length - 1]; // UNIT
@@ -291,7 +292,14 @@ public class Mazurov extends BlockCode {
                 p = GFadd(p, GFmul(P0[j], S[j]));
                 q = GFadd(GFmul(q, z), P0[j]);
             }
-            X[IDX(i)] = GFadd(X[IDX(i)], GFdiv(p, q));
+            idx[ii] = IDX(i);
+            val[ii] = GFadd(X[IDX(i)], GFdiv(p, q));
+            ii += 1;
+        }
+
+        if (ii != P.length - 1) return false;
+        for (int i = 0; i < ii; ++i) {
+            X[idx[i]] = val[i];
         }
 
         return true;

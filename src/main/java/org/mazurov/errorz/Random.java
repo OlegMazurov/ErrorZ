@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2019 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,15 @@ public class Random {
         catch (NoSuchAlgorithmException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    public static void reset() {
+        rnd.setSeed(seed);
+    }
+
+    public static void reset(long s) {
+        seed = s;
+        rnd.setSeed(seed);
     }
 
     public static long nextLong() {
