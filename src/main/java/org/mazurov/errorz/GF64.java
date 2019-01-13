@@ -26,7 +26,7 @@ package org.mazurov.errorz;
 public class GF64 {
 
     private static final long ROOT = 27l;
-    private static final long MSBIT = 0x8000000000000000l;
+    private static final int MSBIT = 63;
 
     public static final long ZERO = 0;
     public static final long UNIT = 1;
@@ -41,16 +41,9 @@ public class GF64 {
     public static long GFmul(long a, long b) {
         long res = 0;
         while (b != 0) {
-            if ((b & 1) == 1) {
-                res ^= a;
-            }
+            res ^= a * (b & 1);
+            a = (a << 1) ^ (a >>> MSBIT) * ROOT;
             b >>>= 1;
-            if ((a & MSBIT) != 0l) {
-                a = (a << 1) ^ ROOT;
-            }
-            else {
-                a = (a << 1);
-            }
         }
         return res;
     }
@@ -83,7 +76,7 @@ public class GF64 {
      */
     public static long GFdiv(long a, long b) {
         if (b == 0) throw new IllegalArgumentException("division by zero");
-        long m = MSBIT;
+        long m = 1l << MSBIT;
         long p = b;
         long vp = a;
         long q = p;
@@ -92,8 +85,7 @@ public class GF64 {
         while (!done) {
             done = (q & m) != 0;
             q <<= 1;
-            if ((vq & MSBIT) != 0) vq = vq << 1 ^ ROOT;
-            else vq <<= 1;
+            vq = (vq << 1) ^ (vq >>> MSBIT) * ROOT;
         }
         q ^= ROOT;
 
@@ -111,8 +103,7 @@ public class GF64 {
             long vr = vq;
             while ((r & m) == 0) {
                 r <<= 1;
-                if ((vr & MSBIT) != 0) vr = vr << 1 ^ ROOT;
-                else vr <<= 1;
+                vr = (vr << 1) ^ (vr >>> MSBIT) * ROOT;
             }
             p ^= r;
             vp ^= vr;
