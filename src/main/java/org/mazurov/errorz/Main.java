@@ -1,5 +1,5 @@
 /*
- * Copyright 2017,2019 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,21 +34,21 @@ public class Main {
         BlockCode code;
         int nRuns, decoded;
 
-        code = new ReedSolomon(256, 248);
+        code = new Vandermonde(256, 248);
         nRuns = 1000;
         decoded = code.testErrors(nRuns, 4);
         System.out.println("Test result: " + (decoded == nRuns ? "PASS" : "FAIL"));
         decoded = code.testErrors(nRuns, 5);
         System.out.println("Test result: " + (decoded == 0 ? "PASS" : "FAIL"));
 
-        code = new ReedSolomon(256, 240);
+        code = new Vandermonde(256, 240);
         nRuns = 1000;
         decoded = code.testErrors(nRuns, 8);
         System.out.println("Test result: " + (decoded == nRuns ? "PASS" : "FAIL"));
         decoded = code.testErrors(nRuns, 9);
         System.out.println("Test result: " + (decoded == 0 ? "PASS" : "FAIL"));
 
-        code = new ReedSolomon(256, 232);
+        code = new Vandermonde(256, 232);
         nRuns = 1000;
         decoded = code.testErrors(nRuns, 12);
         System.out.println("Test result: " + (decoded == nRuns ? "PASS" : "FAIL"));
@@ -74,7 +74,7 @@ public class Main {
         decoded = code.testErrors(nRuns, 22);
         System.out.println("Test result: " + (decoded == 0 ? "PASS" : "FAIL"));
 
-        code = new BlockCode2D(256, 224, 256, 224, new ReedSolomon());
+        code = new BlockCode2D(256, 224, 256, 224, new Vandermonde());
         code.testErrors(25);
 
         code = new BlockCode2D(256, 224, 256, 224, new Mazurov());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,8 @@ public class BlockCode2D extends BlockCode {
         KR = k1;
         rows = new BlockCode[n2];
         for (int r = 0; r < rows.length; ++r) {
-            rows[r] = baseCode.newInstance(NR, KR, X, r * NR, 1, true);
+            rows[r] = baseCode.newInstance(NR, KR, X, r * NR, 1);
+            rows[r].encode();
         }
 
         // Define each column as a base code word.
@@ -64,7 +65,8 @@ public class BlockCode2D extends BlockCode {
         KC = k2;
         cols = new BlockCode[n1];
         for (int c = 0; c < cols.length; ++c) {
-            cols[c] = baseCode.newInstance(NC, KC, X, c, NR, true);
+            cols[c] = baseCode.newInstance(NC, KC, X, c, NR);
+            cols[c].encode();
         }
     }
 
@@ -85,16 +87,16 @@ public class BlockCode2D extends BlockCode {
         KC = code.KC;
         rows = code.rows.clone();
         for (int r = 0; r < rows.length; ++r) {
-            rows[r] = baseCode.newInstance(NR, KR, X, r * NR, 1, false);
+            rows[r] = baseCode.newInstance(NR, KR, X, r * NR, 1);
         }
         cols = code.cols.clone();
         for (int c = 0; c < cols.length; ++c) {
-            cols[c] = baseCode.newInstance(NC, KC, X, c, NR, false);
+            cols[c] = baseCode.newInstance(NC, KC, X, c, NR);
         }
     }
 
     @Override
-    public BlockCode newInstance(int n, int k, long[] x, int offset, int step, boolean fix) {
+    public BlockCode newInstance(int n, int k, long[] x, int offset, int step) {
         throw new RuntimeException("Unimplemented");
     }
 
@@ -109,7 +111,7 @@ public class BlockCode2D extends BlockCode {
     }
 
     @Override
-    public void fixErasures(int[] idx) {
+    public void decode(int[] idx) {
         throw new RuntimeException("Unimplemented");
     }
 
@@ -124,14 +126,14 @@ public class BlockCode2D extends BlockCode {
      * @return {@code true} if fully decoded, {@code false} otherwise
      */
     @Override
-    public boolean fixErrors() {
+    public boolean decode() {
         boolean[] fixedR = new boolean[rows.length];
         boolean[] fixedC = new boolean[cols.length];
         for(;;) {
             int nrows = 0;
             for (int r=0; r<rows.length; ++r) {
                 if (fixedR[r]) continue;
-                if (rows[r].fixErrors()) {
+                if (rows[r].decode()) {
                     fixedR[r] = true;
                     nrows += 1;
                 }
@@ -142,7 +144,7 @@ public class BlockCode2D extends BlockCode {
             int ncols = 0;
             for (int c = 0; c < cols.length; ++c) {
                 if (fixedC[c]) continue;
-                if (cols[c].fixErrors()) {
+                if (cols[c].decode()) {
                     fixedC[c] = true;
                     ncols += 1;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import static org.mazurov.errorz.GF64.*;
  *
  */
 
-public class ReedSolomon extends BlockCode {
+public class Vandermonde extends BlockCode {
 
     // This limit is set artificially low to allow for a reasonably sized
     // pre-computed set of locators
@@ -48,14 +48,15 @@ public class ReedSolomon extends BlockCode {
     /**
      * Create an empty code word
      */
-    public ReedSolomon() {}
+    public Vandermonde() {}
 
-    public ReedSolomon(int k) {
+    public Vandermonde(int k) {
         this(Z.length, k);
     }
 
-    public ReedSolomon(int n, int k) {
-        this(n, k, null, 0, 1, true);
+    public Vandermonde(int n, int k) {
+        this(n, k, null, 0, 1);
+        encode();
     }
 
     /**
@@ -65,9 +66,8 @@ public class ReedSolomon extends BlockCode {
      * @param x external array
      * @param offset first element
      * @param step next element
-     * @param fix compute a code word from first @k values
      */
-    public ReedSolomon(int n, int k, long[] x, int offset, int step, boolean fix) {
+    public Vandermonde(int n, int k, long[] x, int offset, int step) {
         if (n > Z.length) throw new IllegalArgumentException("Parameter n=" + n + "exceeds " + Z.length);
 
         N = n;
@@ -88,15 +88,6 @@ public class ReedSolomon extends BlockCode {
                 X[i] = Random.nextLong();
             }
         }
-
-        if (fix) {
-            // Compute the code word by fixing erasures
-            int[] idx = new int[N - K];
-            for (int i = 0; i < idx.length; ++i) {
-                idx[i] = K + i;
-            }
-            fixErasures(idx);
-        }
     }
 
     /**
@@ -104,18 +95,18 @@ public class ReedSolomon extends BlockCode {
      * @return a new instance of this class
      */
     @Override
-    public BlockCode newInstance(int n, int k, long[] x, int offset, int step, boolean fix) {
-        return new ReedSolomon(n, k, x, offset, step, fix);
+    public BlockCode newInstance(int n, int k, long[] x, int offset, int step) {
+        return new Vandermonde(n, k, x, offset, step);
     }
 
     @Override
     public BlockCode clone() {
-        return new ReedSolomon(N, K, X.clone(), offset, step, false);
+        return new Vandermonde(N, K, X.clone(), offset, step);
     }
 
     @Override
     public String toString() {
-        String str = "Reed-Solomon code";
+        String str = "Vandermonde-RS code";
         if (N > 0) {
             str += " (n,k)=(" + N + "," + K + ")";
         }
@@ -127,7 +118,7 @@ public class ReedSolomon extends BlockCode {
      * @param idx - array of erased indices
      */
     @Override
-    public void fixErasures(int[] idx) {
+    public void decode(int[] idx) {
         // Zero the indicated values (erasures)
         for (int i=0; i<idx.length; ++i) {
             X[IDX(idx[i])] = ZERO;
@@ -252,7 +243,7 @@ public class ReedSolomon extends BlockCode {
     }
 
     @Override
-    public boolean fixErrors() {
+    public boolean decode() {
         long[] S = getSyndromes();
 
         // Construct the syndrome matrix
@@ -270,7 +261,7 @@ public class ReedSolomon extends BlockCode {
 
         int[] idx = findRoots(P);
         if (idx.length != P.length - 1) return false;
-        fixErasures(idx);
+        decode(idx);
 
         return true;
     }

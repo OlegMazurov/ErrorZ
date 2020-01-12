@@ -1,5 +1,5 @@
 /*
- * Copyright 2017,2019 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,8 @@ public class Mazurov extends BlockCode {
      * @param k
      */
     public Mazurov(int n, int k) {
-        this(n, k, null, 0, 1, true);
+        this(n, k, null, 0, 1);
+        encode();
     }
 
     /**
@@ -86,9 +87,8 @@ public class Mazurov extends BlockCode {
      * @param x external array
      * @param offset first element
      * @param step next element
-     * @param fix compute a code word from first k values
      */
-    public Mazurov(int n, int k, long[] x, int offset, int step, boolean fix) {
+    public Mazurov(int n, int k, long[] x, int offset, int step) {
         if (n > Z.length) throw new IllegalArgumentException("Parameter n=" + n + "exceeds " + Z.length);
 
         N = n;
@@ -109,15 +109,6 @@ public class Mazurov extends BlockCode {
                 X[i] = Random.nextLong();
             }
         }
-
-        if (fix) {
-            // Compute the code word by fixing erasures
-            int[] idx = new int[N - K];
-            for (int i = 0; i < idx.length; ++i) {
-                idx[i] = K + i;
-            }
-            fixErasures(idx);
-        }
     }
 
     /**
@@ -125,18 +116,18 @@ public class Mazurov extends BlockCode {
      * @return a new instance of this class
      */
     @Override
-    public BlockCode newInstance(int n, int k, long[] x, int offset, int step, boolean fix) {
-        return new Mazurov(n, k, x, offset, step, fix);
+    public BlockCode newInstance(int n, int k, long[] x, int offset, int step) {
+        return new Mazurov(n, k, x, offset, step);
     }
 
     @Override
     public BlockCode clone() {
-        return new Mazurov(N, K, X.clone(), offset, step, false);
+        return new Mazurov(N, K, X.clone(), offset, step);
     }
 
     @Override
     public String toString() {
-        String str = "Mazurov code";
+        String str = "Mazurov-RS code";
         if (N > 0) {
             str += " (n,k)=(" + N + "," + K + ")";;
         }
@@ -148,7 +139,7 @@ public class Mazurov extends BlockCode {
      * @param idx - array of erased indices
      */
     @Override
-    public void fixErasures(int[] idx) {
+    public void decode(int[] idx) {
         // Zero the indicated values (erasures)
         for (int i=0; i<idx.length; ++i) {
             X[IDX(idx[i])] = ZERO;
@@ -250,11 +241,11 @@ public class Mazurov extends BlockCode {
     }
 
     /**
-     * fixErrors
+     * decode
      * @return true if successful
      */
     @Override
-    public boolean fixErrors() {
+    public boolean decode() {
         long[] S = getSyndromes();
 
         // Construct the syndrome matrix

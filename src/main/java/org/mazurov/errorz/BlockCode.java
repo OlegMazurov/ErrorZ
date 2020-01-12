@@ -1,5 +1,5 @@
 /*
- * Copyright 2017,2019 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public abstract class BlockCode {
         for (int t = 0; t < nRuns; ++t) {
             BlockCode testCode = this.clone();
             testCode.addErrors(errors);    // ignore error locations
-            if (!testCode.fixErrors()) {
+            if (!testCode.decode()) {
                 rejected += 1;
             }
             else {
@@ -120,7 +120,7 @@ public abstract class BlockCode {
             int errors = (lo + hi)/2;
             testCode.addErrors(errors);
             boolean decoded = false;
-            if (testCode.fixErrors()) {
+            if (testCode.decode()) {
                 decoded = true;
                 long[] testX = testCode.getX();
                 for (int i = 0; i < X.length; ++i) {
@@ -145,9 +145,43 @@ public abstract class BlockCode {
         System.out.println("    [min failed, max decoded]: [" + minFailed +", " + maxDecoded + "]");
     }
 
+    /**
+     * Virtual constructor
+     * @param n block length
+     * @param k message length
+     * @param x array containing the code word
+     * @param offset offset of the first element in the array
+     * @param step distance between code word elements in the array
+     * @return a new instance of the same type as the original code word
+     */
+    public abstract BlockCode newInstance(int n, int k, long[] x, int offset, int step);
 
-    public abstract BlockCode newInstance(int n, int k, long[] x, int offset, int step, boolean fix);
+    /**
+     * Clone the current state of the code word
+     * @return a full copy of the code word with no shared data with the original
+     */
     public abstract BlockCode clone();
-    public abstract void fixErasures(int[] idx);
-    public abstract boolean fixErrors();
+
+    /**
+     * Encode the code word by fixing erasures at K .. N-1
+     */
+    public void encode() {
+        int[] idx = new int[N - K];
+        for (int i = 0; i < idx.length; ++i) {
+            idx[i] = K + i;
+        }
+        decode(idx);
+    }
+
+    /**
+     * Fix erasures at locations provided in {@code idx[]}
+     * @param idx
+     */
+    public abstract void decode(int[] idx);
+
+    /**
+     * Fix errors
+     * @return true if the code word has been successfully decoded
+     */
+    public abstract boolean decode();
 }

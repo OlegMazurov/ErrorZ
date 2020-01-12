@@ -1,5 +1,5 @@
 /*
- * Copyright 2017,2019 Oleg Mazurov
+ * Copyright 2017,2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class BlockCodeTest {
 
     @Test
     public void testA_RS() {
-        BlockCode code = new ReedSolomon(256, 248);
+        BlockCode code = new Vandermonde(256, 248);
         int nRuns = 100;
 
         // Positive
@@ -47,7 +47,7 @@ public class BlockCodeTest {
 
     @Test
     public void testA_RS2() {
-        BlockCode code = new ReedSolomon(256, 240);
+        BlockCode code = new Vandermonde(256, 240);
         int nRuns = 100;
 
         // Positive
@@ -61,7 +61,7 @@ public class BlockCodeTest {
 
     @Test
     public void testA_RS3() {
-        BlockCode code = new ReedSolomon(256, 232);
+        BlockCode code = new Vandermonde(256, 232);
         int nRuns = 100;
 
         // Positive
