@@ -25,10 +25,9 @@ import static org.mazurov.errorz.GF64.*;
  *
  */
 
-public class Mazurov extends BlockCode {
+public class Mazurov extends BaseBlockCode {
 
-    // This limit is set artificially low to allow for a reasonably sized
-    // pre-computed set of locators
+    // Maximum block length = 2^(64/D)
     private static final int MAXN = 256;
 
     // GF(2^D) - subfield of 2^64, 64 = D*k
@@ -64,16 +63,16 @@ public class Mazurov extends BlockCode {
 
     /**
      * Create a random code word of maximum length
-     * @param k
+     * @param k message length
      */
     public Mazurov(int k) {
         this(Z.length, k);
     }
 
     /**
-     * Create a random code word of length #n
-     * @param n
-     * @param k
+     * Create a random code word of length ${code n}
+     * @param n block length
+     * @param k message length
      */
     public Mazurov(int n, int k) {
         this(n, k, null, 0, 1);
@@ -83,32 +82,14 @@ public class Mazurov extends BlockCode {
     /**
      * Create a sparse code word from an external array
      * @param n code length
-     * @param k
+     * @param k message length
      * @param x external array
      * @param offset first element
      * @param step next element
      */
     public Mazurov(int n, int k, long[] x, int offset, int step) {
+        super(n, k, x, offset, step);
         if (n > Z.length) throw new IllegalArgumentException("Parameter n=" + n + "exceeds " + Z.length);
-
-        N = n;
-        K = k;
-        X = x;
-        this.offset = offset;
-        this.step = step;
-
-        if (X == null) {
-            if (offset != 0 || step != 1) {
-                throw new IllegalArgumentException("Parameters not consistent: x == null && (offset != 0 || step != 1)");
-            }
-
-            // Create a new code word and initialize
-            // the first K elements with random values
-            X = new long[N];
-            for (int i=0; i<K; ++i) {
-                X[i] = Random.nextLong();
-            }
-        }
     }
 
     /**
@@ -116,12 +97,12 @@ public class Mazurov extends BlockCode {
      * @return a new instance of this class
      */
     @Override
-    public BlockCode newInstance(int n, int k, long[] x, int offset, int step) {
+    public BaseBlockCode newInstance(int n, int k, long[] x, int offset, int step) {
         return new Mazurov(n, k, x, offset, step);
     }
 
     @Override
-    public BlockCode clone() {
+    public BaseBlockCode clone() {
         return new Mazurov(N, K, X.clone(), offset, step);
     }
 
@@ -132,6 +113,10 @@ public class Mazurov extends BlockCode {
             str += " (n,k)=(" + N + "," + K + ")";;
         }
         return str;
+    }
+
+    public long getLocator(int i) {
+        return Z[i];
     }
 
     /**

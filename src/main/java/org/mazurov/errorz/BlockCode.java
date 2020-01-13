@@ -1,5 +1,5 @@
 /*
- * Copyright 2017,2020 Oleg Mazurov
+ * Copyright 2020 Oleg Mazurov
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,165 +23,54 @@ package org.mazurov.errorz;
  *
  */
 
-public abstract class BlockCode {
-
-    protected int N, K;
-    protected long[] X;
-    protected int offset, step;
-
-    public int getN() {
-        return N;
-    }
-
-    public int getK() {
-        return K;
-    }
-
-    public long[] getX() {
-        return X;
-    }
+public interface BlockCode {
 
     /**
-     * Maps logical index to physical
-     * @param i logical index
-     * @return physical index
+     * getBlockLength
+     * @return code block length, n
      */
-    protected int IDX(int i) {
-        return offset + i * step;
-    }
+    int getBlockLength();
 
     /**
-     * Generate exactly @E random errors in the code word
-     * @param E number of errors
-     * @return array of error indices
+     * getMessageLength
+     * @return code message length, k
      */
-    public int[] addErrors(int E) {
-        int[] idx = new int[E];
-        boolean[] marks = new boolean[X.length];
-        for (int i = 0; i < E;) {
-            int next = Random.nextInt(X.length);
-            if (marks[next]) continue;
-            marks[next] = true;
-            X[next] = Random.nextLong();
-            idx[i++] = next;
-        }
-        return idx;
-    }
+    int getMessageLength();
 
     /**
-     * Test error recovery
-     * @param nRuns    number of iterations
-     * @param errors   number of errors
+     * Encode the code word
      */
-    public int testErrors(int nRuns, int errors) {
-        int rejected = 0;       // rejected decoding
-        int failed = 0;         // erroneous decoding
-        for (int t = 0; t < nRuns; ++t) {
-            BlockCode testCode = this.clone();
-            testCode.addErrors(errors);    // ignore error locations
-            if (!testCode.decode()) {
-                rejected += 1;
-            }
-            else {
-                long[] testX = testCode.getX();
-                for (int i = 0; i < X.length; ++i) {
-                    if (testX[i] != X[i]) {
-                        failed += 1;
-                        break;
-                    }
-                }
-            }
-        }
-        int decoded = nRuns - rejected - failed;
-        StringBuilder sb = new StringBuilder();
-        sb.append(this);
-        sb.append(", redundancy: ").append(N - K);
-        sb.append(", errors: ").append(errors);
-        sb.append(", runs: ").append(nRuns);
-        sb.append(", decoded: " + decoded);
-        sb.append(", rejected: ").append(rejected);
-        sb.append(", failed: ").append(failed);
-        System.out.println(sb);
-        return decoded;
-    }
-
-    /**
-     * Iteratively finds what number of errors has recovery probability .5
-     * @param nRuns maximum number of iterations
-     */
-    public void testErrors(int nRuns) {
-        System.out.println(this);
-        int maxDecoded = 0;
-        int minFailed = Integer.MAX_VALUE;
-        int hi = N - K;
-        int lo = 0;
-        for (int t = 0; t < nRuns; ++t) {
-            BlockCode testCode = this.clone();
-            int errors = (lo + hi)/2;
-            testCode.addErrors(errors);
-            boolean decoded = false;
-            if (testCode.decode()) {
-                decoded = true;
-                long[] testX = testCode.getX();
-                for (int i = 0; i < X.length; ++i) {
-                    if (testX[i] != X[i]) {
-                        decoded = false;
-                        break;
-                    }
-                }
-            }
-            System.out.println("    errors: " + errors + (decoded ? "  OK" : "  FAIL"));
-            if (decoded) {
-                maxDecoded = Math.max(maxDecoded, errors);
-                lo = errors + 1;
-                if (lo > hi) hi = lo;
-            }
-            else {
-                minFailed = Math.min(minFailed, errors);
-                hi = errors - 1;
-                if (lo > hi) lo = hi;
-            }
-        }
-        System.out.println("    [min failed, max decoded]: [" + minFailed +", " + maxDecoded + "]");
-    }
-
-    /**
-     * Virtual constructor
-     * @param n block length
-     * @param k message length
-     * @param x array containing the code word
-     * @param offset offset of the first element in the array
-     * @param step distance between code word elements in the array
-     * @return a new instance of the same type as the original code word
-     */
-    public abstract BlockCode newInstance(int n, int k, long[] x, int offset, int step);
-
-    /**
-     * Clone the current state of the code word
-     * @return a full copy of the code word with no shared data with the original
-     */
-    public abstract BlockCode clone();
-
-    /**
-     * Encode the code word by fixing erasures at K .. N-1
-     */
-    public void encode() {
-        int[] idx = new int[N - K];
-        for (int i = 0; i < idx.length; ++i) {
-            idx[i] = K + i;
-        }
-        decode(idx);
-    }
+    void encode();
 
     /**
      * Fix erasures at locations provided in {@code idx[]}
      * @param idx
      */
-    public abstract void decode(int[] idx);
+    void decode(int[] idx);
 
     /**
      * Fix errors
      * @return true if the code word has been successfully decoded
      */
-    public abstract boolean decode();
+    boolean decode();
+
+    /**
+     * Clone the current state of the code word
+     * @return a full copy of the code word with no shared state with the original
+     */
+    BlockCode clone();
+
+    /**
+     * Get code word element at index @{code i};  0 <= @{code i} < getBlockLength()
+     * @param i index
+     * @return code word element at index @{code i}
+     */
+    long getAt(int i);
+
+    /**
+     * Set code word element at index @{code i} to {@code val}
+     * @param i
+     * @param val
+     */
+    void setAt(int i, long val);
 }

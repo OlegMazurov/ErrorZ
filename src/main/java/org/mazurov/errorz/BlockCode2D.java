@@ -23,12 +23,13 @@ package org.mazurov.errorz;
  *
  */
 
-public class BlockCode2D extends BlockCode {
+public class BlockCode2D implements BlockCode {
 
-    private final BlockCode baseCode;
-    int NR, NC, KR, KC;
-    private BlockCode[] rows;
-    private BlockCode[] cols;
+    private final BaseBlockCode baseCode;
+    private int NR, NC, KR, KC;
+    private long[] X;
+    private BaseBlockCode[] rows;
+    private BaseBlockCode[] cols;
 
     /**
      * Constructs a 2-dimensional code word
@@ -38,14 +39,12 @@ public class BlockCode2D extends BlockCode {
      * @param k2 number of data symbols in columns
      * @param base - base block code
      */
-    public BlockCode2D(int n1, int k1, int n2, int k2, BlockCode base) {
+    public BlockCode2D(int n1, int k1, int n2, int k2, BaseBlockCode base) {
         baseCode = base;
-        N = n1 * n2;
-        K = k1 * k2;
-        X = new long[N];
 
         // Initialize the entire array even if we recompute
         // redundant symbols in the next two steps
+        X = new long[n1 * n2];
         for (int i = 0; i < X.length; ++i) {
             X[i] = Random.nextLong();
         }
@@ -54,20 +53,20 @@ public class BlockCode2D extends BlockCode {
         // Last NC - KC rows will be recomputed below.
         NR = n1;
         KR = k1;
-        rows = new BlockCode[n2];
+        rows = new BaseBlockCode[n2];
         for (int r = 0; r < rows.length; ++r) {
             rows[r] = baseCode.newInstance(NR, KR, X, r * NR, 1);
-            rows[r].encode();
         }
 
         // Define each column as a base code word.
         NC = n2;
         KC = k2;
-        cols = new BlockCode[n1];
+        cols = new BaseBlockCode[n1];
         for (int c = 0; c < cols.length; ++c) {
             cols[c] = baseCode.newInstance(NC, KC, X, c, NR);
-            cols[c].encode();
         }
+
+        encode();
     }
 
     /**
@@ -76,10 +75,6 @@ public class BlockCode2D extends BlockCode {
      */
     public BlockCode2D(BlockCode2D code) {
         X = code.X.clone();
-        N = code.N;
-        K = code.K;
-        offset = code.offset;
-        step = code.step;
         baseCode = code.baseCode;
         NR = code.NR;
         KR = code.KR;
@@ -96,18 +91,43 @@ public class BlockCode2D extends BlockCode {
     }
 
     @Override
-    public BlockCode newInstance(int n, int k, long[] x, int offset, int step) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
     public BlockCode clone() {
         return new BlockCode2D(this);
     }
 
     @Override
     public String toString() {
-        return "2-dimensional " + baseCode + " (n,k)=(" + N + "," + K + ")=(" + NR + "," + KR + ")*(" + NC + "," + KC + ")";
+        return "2-dimensional [" + baseCode + "] (n,k)=(" + getBlockLength() + "," + getMessageLength() + ")=(" + NR + "," + KR + ")*(" + NC + "," + KC + ")";
+    }
+
+    @Override
+    public int getBlockLength() {
+        return NR * NC;
+    }
+
+    @Override
+    public int getMessageLength() {
+        return KR * KC;
+    }
+
+    @Override
+    public long getAt(int i) {
+        return X[i];
+    }
+
+    @Override
+    public void setAt(int i, long val) {
+        X[i] = val;
+    }
+
+    @Override
+    public void encode() {
+        for (BaseBlockCode row :rows ) {
+            row.encode();
+        }
+        for (BaseBlockCode col : cols) {
+            col.encode();
+        }
     }
 
     @Override

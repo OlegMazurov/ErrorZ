@@ -37,11 +37,11 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive
-        int decoded = code.testErrors(nRuns, 4);
+        int decoded = TestUtils.testErrors(code, nRuns, 4);
         Assert.assertEquals(nRuns, decoded);
 
         // Negative
-        decoded = code.testErrors(nRuns, 5);
+        decoded = TestUtils.testErrors(code, nRuns, 5);
         Assert.assertEquals(0, decoded);
     }
 
@@ -51,11 +51,11 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive
-        int decoded = code.testErrors(nRuns, 8);
+        int decoded = TestUtils.testErrors(code, nRuns, 8);
         Assert.assertEquals(nRuns, decoded);
 
         // Negative
-        decoded = code.testErrors(nRuns, 9);
+        decoded = TestUtils.testErrors(code, nRuns, 9);
         Assert.assertEquals(0, decoded);
     }
 
@@ -65,11 +65,11 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive
-        int decoded = code.testErrors(nRuns, 12);
+        int decoded = TestUtils.testErrors(code, nRuns, 12);
         Assert.assertEquals(nRuns, decoded);
 
         // Negative
-        decoded = code.testErrors(nRuns, 13);
+        decoded = TestUtils.testErrors(code, nRuns, 13);
         Assert.assertEquals(0, decoded);
     }
 
@@ -79,7 +79,7 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive only
-        int decoded = code.testErrors(nRuns, 7);
+        int decoded = TestUtils.testErrors(code, nRuns, 7);
         Assert.assertEquals(nRuns, decoded);
     }
 
@@ -89,11 +89,11 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive
-        int decoded = code.testErrors(nRuns, 14);
+        int decoded = TestUtils.testErrors(code, nRuns, 14);
         Assert.assertEquals(nRuns, decoded);
 
         // Negative
-        decoded = code.testErrors(nRuns, 15);
+        decoded = TestUtils.testErrors(code, nRuns, 15);
         Assert.assertEquals(0, decoded);
     }
 
@@ -103,11 +103,11 @@ public class BlockCodeTest {
         int nRuns = 100;
 
         // Positive
-        int decoded = code.testErrors(nRuns, 21);
+        int decoded = TestUtils.testErrors(code, nRuns, 21);
         Assert.assertEquals(nRuns, decoded);
 
         // Negative
-        decoded = code.testErrors(nRuns, 22);
+        decoded = TestUtils.testErrors(code, nRuns, 22);
         Assert.assertEquals(0, decoded);
     }
 
@@ -117,7 +117,66 @@ public class BlockCodeTest {
         int nRuns = 1;
 
         // Positive only
-        int decoded = code.testErrors(nRuns, 2100);
+        int decoded = TestUtils.testErrors(code, nRuns, 2100);
         Assert.assertEquals(nRuns, decoded);
     }
+
+    @Test
+    public void testC_Lagrange1() {
+        BlockCode code = new Lagrange(256, 232, new Vandermonde());
+        int nRuns = 100;
+
+        // Positive
+        int decoded = TestUtils.testErrors(code, nRuns, 12);
+        Assert.assertEquals(nRuns, decoded);
+
+        // Negative
+        decoded = TestUtils.testErrors(code, nRuns, 13);
+        Assert.assertEquals(0, decoded);
+
+    }
+
+    @Test
+    public void testC_Lagrange2() {
+        BlockCode code = new Lagrange(256, 232, new Mazurov());
+        int nRuns = 100;
+
+        // Positive
+        int decoded = TestUtils.testErrors(code, nRuns, 21);
+        Assert.assertEquals(nRuns, decoded);
+
+        // Negative
+        decoded = TestUtils.testErrors(code, nRuns, 22);
+        Assert.assertEquals(0, decoded);
+    }
+
+    @Test
+    public void testD_Cauchy1() {
+        BlockCode code = new Cauchy(256, 232, new Vandermonde());
+        int nRuns = 100;
+
+        // Positive
+        int decoded = TestUtils.testErrors(code, nRuns, 12);
+        Assert.assertEquals(nRuns, decoded);
+
+        // Negative
+        decoded = TestUtils.testErrors(code, nRuns, 13);
+        Assert.assertEquals(0, decoded);
+
+    }
+
+    @Test
+    public void testD_Cauchy2() {
+        BlockCode code = new Cauchy(256, 232, new Mazurov());
+        int nRuns = 100;
+
+        // Positive
+        int decoded = TestUtils.testErrors(code, nRuns, 21);
+        Assert.assertEquals(nRuns, decoded);
+
+        // Negative
+        decoded = TestUtils.testErrors(code, nRuns, 22);
+        Assert.assertEquals(0, decoded);
+    }
+
 }
