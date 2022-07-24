@@ -268,12 +268,19 @@ public class Mazurov extends BaseBlockCode {
                 p = GFadd(p, GFmul(P0[j], S[j]));
                 q = GFadd(GFmul(q, z), P0[j]);
             }
+            if (q == ZERO) {
+                // Repeated root
+                return false;
+            }
             idx[ii] = IDX(i);
             val[ii] = GFadd(X[IDX(i)], GFdiv(p, q));
             ii += 1;
         }
 
-        if (ii != P.length - 1) return false;
+        if (ii != P.length - 1) {
+            // Too few roots
+            return false;
+        }
         for (int i = 0; i < ii; ++i) {
             X[idx[i]] = val[i];
         }
