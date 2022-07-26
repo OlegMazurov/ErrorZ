@@ -70,32 +70,33 @@ public class TestUtils {
                 }
             }
         }
+        int redundancy = code.getBlockLength() - code.getMessageLength();
         int decoded = nRuns - rejected - failed;
-        StringBuilder sb = new StringBuilder();
-        sb.append(code);
-        sb.append(", redundancy: ").append(code.getBlockLength() - code.getMessageLength());
-        sb.append(", errors: ").append(errors);
-        sb.append(", runs: ").append(nRuns);
-        sb.append(", decoded: " + decoded);
-        sb.append(", rejected: ").append(rejected);
-        sb.append(", failed: ").append(failed);
-        System.out.println(sb);
+        System.out.printf("%s, redundancy: %d, errors: %d, runs: %d, decoded: %d, rejected: %d, failed: %d%n",
+                code, redundancy, errors, nRuns, decoded, rejected, failed);
         return decoded;
     }
 
     /**
-     * Iteratively finds what number of errors has recovery probability .5
+     * Iteratively finds code's decoding ability in terms of the minimum number of errors
+     * where decoding fails and the maximum number of error where decoding succeeds.
      * @param nRuns maximum number of iterations
      */
     public static void testErrors(BlockCode code, int nRuns) {
         System.out.println(code);
+        int redundancy = code.getBlockLength() - code.getMessageLength();
         int maxDecoded = 0;
-        int minFailed = Integer.MAX_VALUE;
-        int hi = code.getBlockLength() - code.getMessageLength();
-        int lo = 0;
+        int minFailed = redundancy;
         for (int t = 0; t < nRuns; ++t) {
             BlockCode testCode = code.clone();
-            int errors = (lo + hi)/2;
+            int errors;
+            if (maxDecoded + 1 < minFailed) {
+                errors = (maxDecoded + minFailed) / 2;
+            }
+            else {
+                int delta = 1 + Random.nextInt(1 + (int)(16. * (1. - (double)t / nRuns)));
+                errors = (t %2 == 0) ? maxDecoded + delta : minFailed - delta;
+            }
             addErrors(testCode, errors);
             boolean decoded = false;
             if (testCode.decode()) {
@@ -107,18 +108,18 @@ public class TestUtils {
                     }
                 }
             }
-            System.out.println("    errors: " + errors + (decoded ? "  OK" : "  FAIL"));
+            System.out.printf("    errors: %d  %s%n", errors, decoded ? "OK" : "FAIL");
             if (decoded) {
                 maxDecoded = Math.max(maxDecoded, errors);
-                lo = errors + 1;
-                if (lo > hi) hi = lo;
             }
             else {
                 minFailed = Math.min(minFailed, errors);
-                hi = errors - 1;
-                if (lo > hi) lo = hi;
             }
         }
-        System.out.println("    [min failed, max decoded]: [" + minFailed +", " + maxDecoded + "]");
+        System.out.printf("[min failed, max decoded]: [%d (%d%%), %d (%d%%)]%n",
+                minFailed,
+                (minFailed * 100 + redundancy / 2) / redundancy,
+                maxDecoded,
+                (maxDecoded * 100 + redundancy / 2) / redundancy);
     }
 }

@@ -16,6 +16,10 @@
 
 package org.mazurov.errorz;
 
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+
 /**
  * Project ErrorZ
  *
@@ -26,10 +30,13 @@ package org.mazurov.errorz;
 public class BlockCode2D implements BlockCode {
 
     private final BaseBlockCode baseCode;
-    private int NR, NC, KR, KC;
-    private long[] X;
-    private BaseBlockCode[] rows;
-    private BaseBlockCode[] cols;
+    private final int NR;
+    private final int NC;
+    private final int KR;
+    private final int KC;
+    private final long[] X;
+    private final BaseBlockCode[] rows;
+    private final BaseBlockCode[] cols;
 
     /**
      * Constructs a 2-dimensional code word
@@ -122,12 +129,8 @@ public class BlockCode2D implements BlockCode {
 
     @Override
     public void encode() {
-        for (BaseBlockCode row :rows ) {
-            row.encode();
-        }
-        for (BaseBlockCode col : cols) {
-            col.encode();
-        }
+        Arrays.stream(rows).parallel().forEach(BaseBlockCode::encode);
+        Arrays.stream(cols).parallel().forEach(BaseBlockCode::encode);
     }
 
     @Override
@@ -149,31 +152,21 @@ public class BlockCode2D implements BlockCode {
     public boolean decode() {
         boolean[] fixedR = new boolean[rows.length];
         boolean[] fixedC = new boolean[cols.length];
-        for(;;) {
-            int nrows = 0;
-            for (int r=0; r<rows.length; ++r) {
-                if (fixedR[r]) continue;
-                if (rows[r].decode()) {
-                    fixedR[r] = true;
-                    nrows += 1;
-                }
-            }
+        for (;;) {
+            AtomicInteger progress = new AtomicInteger(0);
+            IntStream.range(0, rows.length).parallel()
+                    .filter(r -> !fixedR[r])
+                    .forEach(r -> progress.getAndAdd((fixedR[r] = rows[r].decode()) ? 1 : 0));
             int cnt = count(fixedR);
             if (cnt == rows.length) return true;
 
-            int ncols = 0;
-            for (int c = 0; c < cols.length; ++c) {
-                if (fixedC[c]) continue;
-                if (cols[c].decode()) {
-                    fixedC[c] = true;
-                    ncols += 1;
-                }
-            }
+            IntStream.range(0, cols.length).parallel()
+                    .filter(c -> !fixedC[c])
+                    .forEach(c -> progress.getAndAdd((fixedC[c] = cols[c].decode()) ? 1 : 0));
             cnt = count(fixedC);
-
             if (cnt == cols.length) return true;
 
-            if (nrows == 0 && ncols == 0) break;
+            if (progress.get() == 0) break;
         }
         return false;
     }

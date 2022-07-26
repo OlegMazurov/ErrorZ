@@ -110,7 +110,7 @@ public class Mazurov extends BaseBlockCode {
     public String toString() {
         String str = "Mazurov-RS code";
         if (N > 0) {
-            str += " (n,k)=(" + N + "," + K + ")";;
+            str += " (n,k)=(" + N + "," + K + ")";
         }
         return str;
     }
@@ -125,9 +125,14 @@ public class Mazurov extends BaseBlockCode {
      */
     @Override
     public void decode(int[] idx) {
-        // Zero the indicated values (erasures)
-        for (int i=0; i<idx.length; ++i) {
-            X[IDX(idx[i])] = ZERO;
+        // Make a local copy
+        long[] XX = new long[N];
+        for (int i = 0; i < N; ++i) {
+            XX[i] = X[IDX(i)];
+        }
+        // Erase indicated values
+        for (int i : idx) {
+            XX[i] = ZERO;
         }
 
         // Reconstruct erased values
@@ -142,13 +147,13 @@ public class Mazurov extends BaseBlockCode {
 
             long e = ZERO;
             for (int k = 0; k < N; ++k) {
-                if (X[IDX(k)] == ZERO) continue;
+                if (XX[k] == ZERO) continue;
                 long v = 1;
                 for (int j = 0; j < idx.length; ++j) {
                     if (j == i) continue;
                     v = GFmul(v, GFsub(Z[k], Z[idx[j]])); // v *= Z[k] - Z[idx[j]]
                 }
-                e = GFadd(e, GFmul(X[IDX(k)], GFmul(v, d))); // e += X[IDX(k)] * v * d
+                e = GFadd(e, GFmul(XX[k], GFmul(v, d))); // e += X[IDX(k)] * v * d
             }
             E[i] = e;
         }
@@ -163,10 +168,10 @@ public class Mazurov extends BaseBlockCode {
      * Computes code word syndromes
      * @return array of N - K syndromes
      */
-    private long[] getSyndromes() {
+    private long[] getSyndromes(long[] XX) {
         long[] S = new long[N - K];
         for (int i = 0; i < N; ++i) {
-            long v = X[IDX(i)];
+            long v = XX[i];
             for (int j = 0; j < S.length; ++j) {
                 S[j] = GFadd(S[j], v);
                 v = GFmul(v, Z[i]);
@@ -231,7 +236,13 @@ public class Mazurov extends BaseBlockCode {
      */
     @Override
     public boolean decode() {
-        long[] S = getSyndromes();
+        // Make a local copy
+        long[] XX = new long[N];
+        for (int i = 0; i < N; ++i) {
+            XX[i] = X[IDX(i)];
+        }
+
+        long[] S = getSyndromes(XX);
 
         // Construct the syndrome matrix
         int m = N - K;
@@ -273,14 +284,14 @@ public class Mazurov extends BaseBlockCode {
                 return false;
             }
             idx[ii] = IDX(i);
-            val[ii] = GFadd(X[IDX(i)], GFdiv(p, q));
+            val[ii] = GFadd(XX[i], GFdiv(p, q));
             ii += 1;
         }
-
         if (ii != P.length - 1) {
             // Too few roots
             return false;
         }
+
         for (int i = 0; i < ii; ++i) {
             X[idx[i]] = val[i];
         }
