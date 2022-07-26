@@ -17,7 +17,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -46,7 +46,6 @@
                     <id>default-cli</id>
                     <configuration>
                         <mainClass>org.mazurov.errorz.Main</mainClass>
-                        <commandlineArgs></commandlineArgs>
                     </configuration>
                     </execution>
                 </executions>
